@@ -1,6 +1,8 @@
 import httpRequestApi from "@/utils/request"
 const {
-    vipList
+    vipList,
+    vipAddEdit,
+    vipDelete
 } = httpRequestApi
 
 const state: {
@@ -11,7 +13,7 @@ const state: {
         totalPage: number,
     }
 } = {
-    data:{
+    data: {
         pageNum: 1,
         pageSize: 10,
         totalPage: 1,
@@ -20,23 +22,39 @@ const state: {
 }
 
 const actions = {
+    //得到vip列表，分页
     async getVipList({ state, commit }: any, params?: {}) {
         const {
-            pageNum,
+            data: {
+                pageNum,
+                pageSize
+            }
         } = state
-        params = params ? {pageNum, ...params} : {}
+        // console.log(params)
+        params = params ? { pageSize, pageNum, ...params } : {}
         const res: any = await vipList(params)
         const {
             flag,
             data: {
                 data
             }
-        } = res      
-        if(flag) {
+        } = res
+        if (flag) {
             commit('setVipData', data)
         }
         return res
-        
+    },
+
+    //添加，编辑会员
+    async vipAddEdit(_: any, params: {}) {
+        const res: any = await vipAddEdit(params)
+        return res
+    },
+
+    //删除会员
+    async vipDelete(_: any, params: {}) {
+        const res: any = await vipDelete(params)
+        return res
     }
 }
 
