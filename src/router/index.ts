@@ -4,6 +4,7 @@ const Home = () => import("@/page/Home/index.vue")
 const Login = () => import("@/page/Login.vue")
 const NotFound = () => import("@/page/404.vue")
 const Member = () => import("@/page/Home/Member/index.vue")
+const FullMember = () => import("@/page/Home/Member/FullMember.vue")
 export const routes = [
     {
         path: "/",
@@ -15,7 +16,18 @@ export const routes = [
                 name: 'member',
                 component: Member,
                 zhName: "会员",
-                icon: "user"
+                icon: "postcard",
+                children: [
+                    {
+                        path: '',
+                        component: FullMember,
+                        zhName: "正式会员",
+                        icon: "",
+                        children: [
+                            
+                        ]
+                    }, 
+                ]
             },
             // {
             //     path: 'member1',

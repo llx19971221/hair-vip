@@ -7,7 +7,8 @@ const api: {
     
     'vipList': head + '/vip/list get',
     'vipAddEdit': head + '/vip/edit post',
-    'vipDelete': head + '/vip/del delete'
+    'vipDelete': head + '/vip/del delete',
+    'vipRecharge': head + '/vip/recharge post'
 }
 
 export default api

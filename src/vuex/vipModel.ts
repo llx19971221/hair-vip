@@ -2,7 +2,8 @@ import httpRequestApi from "@/utils/request"
 const {
     vipList,
     vipAddEdit,
-    vipDelete
+    vipDelete,
+    vipRecharge
 } = httpRequestApi
 
 const state: {
@@ -54,6 +55,12 @@ const actions = {
     //删除会员
     async vipDelete(_: any, params: {}) {
         const res: any = await vipDelete(params)
+        return res
+    },
+
+    //充钱
+    async vipRecharge(_: any, params: {}) {
+        const res: any = await vipRecharge(params)
         return res
     }
 }
