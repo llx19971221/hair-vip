@@ -1,6 +1,7 @@
 import httpRequestApi from "@/utils/request"
 const {
     vipList,
+    vipDetail,
     vipAddEdit,
     vipDelete,
     vipRecharge
@@ -43,6 +44,12 @@ const actions = {
         if (flag) {
             commit('setVipData', data)
         }
+        return res
+    },
+
+    //会员消费详情 
+    async vipDetail(_:any, params: {}) {
+        const res: any = await vipDetail(params)
         return res
     },
 

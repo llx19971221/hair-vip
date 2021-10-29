@@ -17,6 +17,7 @@
         />
       </div>
     </div>
+
     <!--会员列表-->
     <div v-loading="tableLoading" class="table-wrap">
       <el-table
@@ -27,9 +28,12 @@
         <el-table-column type="selection" width="55" />
         <el-table-column sortable prop="name" label="会员名">
           <template #default="{ row }">
-            <el-link title="详情" @click="detailMember(row)" type="primary">{{
-              row.name
-            }}</el-link>
+            <el-link
+              title="消费详情"
+              @click="detailMember(row)"
+              type="primary"
+              >{{ row.name }}</el-link
+            >
           </template>
         </el-table-column>
         <el-table-column prop="phoneNum" label="电话" />
@@ -46,7 +50,7 @@
             }}
           </template>
         </el-table-column>
-        <el-table-column fixed="right" label="操作" width="150">
+        <el-table-column fixed="right" width="190">
           <template #default="{ row }">
             <el-button
               title="编辑"
@@ -67,13 +71,22 @@
               @click="handleRecharge(row)"
             />
             <el-button
-              title="消费"
+              title="结账"
               circle
               plain
               icon="el-icon-goods"
               type="warning"
               size="small"
               @click="editMember(row)"
+            />
+            <el-button
+              title="积分会员"
+              circle
+              plain
+              icon="el-icon-postcard"
+              type="success"
+              size="small"
+              @click="intergralMember(row)"
             />
             <!-- <el-button type="text" size="small">Edit</el-button> -->
           </template>
@@ -167,10 +180,55 @@
       </el-form>
       <!-- <el-input readonly :value="rechargeForm.name" /> -->
     </el-dialog>
-    <el-dialog v-model="integralFormVisible" title="积分会员" width="300px">
-    </el-dialog>
-    <!--积分会员弹窗-->
 
+    <!--会员详情弹窗-->
+    <el-dialog
+      custom-class="member-detail-dialog"
+      v-model="memberDetailObj.memberDetailVisible"
+      width="400px"
+    >
+      <template #title>
+        <h4 style="margin: 0">消费详情</h4>
+        <p style="margin: 0">{{ memberDetailObj.memebrConsumeDetail.name }}</p>
+        <strong style="font-size: 14px"
+          >({{ memberDetailObj.memebrConsumeDetail.phoneNum }})</strong
+        >
+      </template>
+      <el-input
+        placeholder="消费记录部分信息，如（充值，xx元，注册）"
+        v-model="memberDetailObj.keyword"
+        @keypress.enter="searchVipDetal"
+        size="small"
+        style="margin-bottom: 5px"
+      />
+      <el-collapse
+        v-infinite-scroll="infiniteLoad"
+        style="height: 400px; overflow: auto"
+      >
+        <el-collapse-item
+          v-for="(item, idx) in memberDetailObj.memebrConsumeDetail.items"
+        >
+          <template #title>
+            {{ item.name
+            }}<i
+              v-if="item.detail.indexOf('充值') >= 0"
+              class="el-icon-money"
+            ></i
+            ><span style="margin: 0 0 0 5px">{{ item.gmtCreate }}</span>
+          </template>
+          {{ item.detail }}
+        </el-collapse-item>
+      </el-collapse>
+    </el-dialog>
+
+    <!--积分会员-->
+    <el-dialog
+      v-model="interalMemberObj.interalMemberVisible"
+      width="400px"
+      title="积分会员"
+    >
+
+    </el-dialog>
   </div>
 </template>
 
@@ -194,16 +252,37 @@ export default defineComponent({
     const dialogFormVisible: Ref<boolean> = ref(false); //添加，编辑会员弹窗是否显示
     const rechargeFormVisible: Ref<boolean> = ref(false); //会员充值弹窗
     const integralFormVisible: Ref<boolean> = ref(false); //积分会员弹窗
+    const memberDetailObj = reactive({
+      memebrConsumeDetail: {
+        id: "", //点击的会员ID
+        name: "",
+        keyword: "",
+        phoneNum: null,
+        pageNum: 1,
+        pageSize: 10,
+        items: [],
+      }, //会员详情信息
+      memberDetailVisible: false, //弹窗显示
+      keyword: "",
+    }); //会员详情
+    const interalMemberObj = reactive({
+      data: {
+        id: "",
+        interal: 0,
+        interalFlag: 0
+      },
+      interalMemberVisible: false
+    }) //积分会员
     const memberFormRef: Ref<any> = ref(null); //form dom元素
     const tableRef: Ref<any> = ref(null); //table dom元素
     const keyword: Ref<string | number> = ref(""); //输入会员名或者电话查询
     const objData = reactive({
-      tableSelections: [],
+      tableSelections: [], //选中的table项
       rechargeForm: {
         id: "",
         name: "",
         amount: 0,
-      },
+      }, //充钱
       memberForm: {
         id: "",
         name: "",
@@ -242,7 +321,56 @@ export default defineComponent({
 
     //会员详情
     const detailMember: Function = async (row: any) => {
-      console.log(row);
+      let { id, name, phoneNum } = row;
+      if (phoneNum) {
+        const val = String(phoneNum);
+        phoneNum = val.slice(0, 3) + "*".repeat(4) + val.slice(7);
+      }
+      const {
+        flag,
+        data: {
+          data: { items: data },
+        },
+      } = await store.dispatch("vipModel/vipDetail", {
+        pageNum: 1,
+        pageSize: 10,
+        id,
+      });
+      memberDetailObj.memebrConsumeDetail = {
+        pageNum: 1,
+        pageSize: 10,
+        items: flag ? data : [],
+        keyword: "", //敲了回车，这个值才会更新会输入框当前的值
+        id,
+        name,
+        phoneNum,
+      }; //会员详情信息重置
+      memberDetailObj.memberDetailVisible = true; //弹窗显示
+      memberDetailObj.keyword = ""; //输入框的值
+    };
+
+    //会员详情搜索
+    const searchVipDetal = async (e: InputEvent) => {
+      const { id } = memberDetailObj.memebrConsumeDetail;
+      const keyword = (e.target as HTMLInputElement).value;
+      const {
+        flag,
+        data: {
+          data: { items: data },
+        },
+      } = await store.dispatch("vipModel/vipDetail", {
+        pageNum: 1,
+        pageSize: 10,
+        keyword,
+        id,
+      });
+      memberDetailObj.memebrConsumeDetail = {
+        ...memberDetailObj.memebrConsumeDetail,
+        pageNum: 1,
+        pageSize: 10,
+        items: flag ? data : [],
+        keyword, //敲了回车，更新值为当前值
+      };
     };
 
     //删除会员
@@ -281,19 +409,33 @@ export default defineComponent({
     const rechargeFunc = async () => {
       const { id, amount } = objData.rechargeForm;
       tableLoading.value = true;
-      const { flag } = await store.dispatch('vipModel/vipRecharge', {
+      const { flag } = await store.dispatch("vipModel/vipRecharge", {
         id,
-        amount
-      })
+        amount,
+      });
       if (flag) {
-        ElMessage.success('充值成功！');
+        ElMessage.success("充值成功！");
         rechargeFormVisible.value = false;
-        getVipData()
-      }else {
+        getVipData();
+      } else {
         tableLoading.value = false;
       }
     };
 
+    //积分会员弹窗
+    const intergralMember = async(row: any) => {
+      const {
+        id,
+        interal,
+        interalFlag
+      } = row
+      interalMemberObj.data = {
+        id,
+        interal,
+        interalFlag
+      }
+      interalMemberObj.interalMemberVisible = true
+    }
     //通过关键词，查询会员
     const handleSearch: Function = async () => {
       getVipData({
@@ -347,9 +489,34 @@ export default defineComponent({
         id: row.id,
         name: row.name,
         amount: 0,
-      }
+      };
     };
 
+    //无限滚动加载会员详情
+    const infiniteLoad = async () => {
+      const { pageNum, pageSize, id, keyword } =
+        memberDetailObj.memebrConsumeDetail;
+      const {
+        flag,
+        data: {
+          data: { items: data },
+        },
+      } = await store.dispatch("vipModel/vipDetail", {
+        pageNum: pageNum + 1,
+        pageSize,
+        keyword,
+        id,
+      });
+      if (data.length > 0 && flag) {
+        memberDetailObj.memebrConsumeDetail = {
+          ...memberDetailObj.memebrConsumeDetail,
+          pageNum: pageNum + 1,
+          items: memberDetailObj.memebrConsumeDetail.items.concat(data),
+        };
+      } else {
+        ElMessage.warning("消费记录全部加载完毕");
+      }
+    };
     let vipData = computed(() => store.state.vipModel.data);
     // const memebrForm = toRef(objData, 'memberForm')
     return {
@@ -363,6 +530,7 @@ export default defineComponent({
       objData,
       dialogFormVisible,
       rechargeFormVisible,
+      memberDetailObj,
       addMember,
       addEditMember,
       editMember,
@@ -373,8 +541,17 @@ export default defineComponent({
       handleSelectionChange,
       handleRecharge,
       rechargeFunc,
-      integralFormVisible
+      integralFormVisible,
+      infiniteLoad,
+      searchVipDetal,
+      interalMemberObj,
+      intergralMember
     };
   },
 });
 </script>
+<style lang="less" scoped>
+:deep(.member-detail-dialog .el-dialog__body) {
+  padding: 5px 20px 10px;
+}
+</style>

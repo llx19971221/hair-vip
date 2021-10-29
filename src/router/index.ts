@@ -12,7 +12,7 @@ export const routes = [
         component: Home,
         children: [
             {
-                path: 'member',
+                path: '',
                 name: 'member',
                 component: Member,
                 zhName: "会员",
@@ -20,6 +20,7 @@ export const routes = [
                 children: [
                     {
                         path: '',
+                        name: "fullMember",
                         component: FullMember,
                         zhName: "正式会员",
                         icon: "",

@@ -6,6 +6,7 @@ const api: {
     'login': head + '/user/token post',
     
     'vipList': head + '/vip/list get',
+    'vipDetail': head + '/vip/detail get',
     'vipAddEdit': head + '/vip/edit post',
     'vipDelete': head + '/vip/del delete',
     'vipRecharge': head + '/vip/recharge post'
