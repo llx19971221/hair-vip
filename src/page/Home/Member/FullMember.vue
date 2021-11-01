@@ -1,18 +1,10 @@
 <template>
   <div class="member-wrap">
-    <div style="text-align: right" class="btn-wrap">
-      <el-button
-        size="small"
-        background
-        type="primary"
-        @click="addMember"
+    <div style="text-align: right" :style="{'max-height': `${btnWrapVisble ? '110px' : '0px'}`}" class="btn-wrap">
+      <el-button size="small" background type="primary" @click="addMember"
         >添加会员</el-button
       >
-      <el-button
-        size="small"
-        background
-        type="danger"
-        @click="delMembers"
+      <el-button size="small" background type="danger" @click="delMembers"
         >删除选中的会员</el-button
       >
       <div style="margin: 10px 0">
@@ -25,7 +17,7 @@
         />
       </div>
     </div>
-
+    <el-switch v-model="btnWrapVisble" inline-prompt active-text="打开" inactive-text="收起" />
     <!--会员列表-->
     <div v-loading="tableLoading" class="table-wrap">
       <el-table
@@ -302,6 +294,7 @@ export default defineComponent({
   setup() {
     const store: Store<any> = useStore();
     const tableLoading: Ref<boolean> = ref(false); //table loading
+    const btnWrapVisble: Ref<boolean> = ref(true); //是否收起 默认打开
     const dialogFormVisible: Ref<boolean> = ref(false); //添加，编辑会员弹窗是否显示
     const rechargeFormVisible: Ref<boolean> = ref(false); //会员充值弹窗
     const integralFormVisible: Ref<boolean> = ref(false); //积分会员弹窗
@@ -620,6 +613,7 @@ export default defineComponent({
       vipData: compVipData,
       keyword,
       tableLoading,
+      btnWrapVisble,
       handleCurrentChange,
       handleSizeChange,
       handleSearch,
@@ -652,6 +646,10 @@ export default defineComponent({
 <style lang="less" scoped>
 :deep(.member-detail-dialog .el-dialog__body) {
   padding: 5px 20px 10px;
+}
+.btn-wrap {
+  overflow: hidden;
+  transition: .4s ease;
 }
 .integral-flag {
   background-color: #f56c6c;
