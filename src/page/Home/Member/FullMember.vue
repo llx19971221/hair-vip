@@ -1,10 +1,18 @@
 <template>
   <div class="member-wrap">
     <div style="text-align: right" class="btn-wrap">
-      <el-button background type="primary" size="small" @click="addMember"
+      <el-button
+        size="small"
+        background
+        type="primary"
+        @click="addMember"
         >添加会员</el-button
       >
-      <el-button background type="danger" size="small" @click="delMembers"
+      <el-button
+        size="small"
+        background
+        type="danger"
+        @click="delMembers"
         >删除选中的会员</el-button
       >
       <div style="margin: 10px 0">
@@ -33,6 +41,8 @@
               @click="detailMember(row)"
               type="primary"
               >{{ row.name }}</el-link
+            ><i v-if="!!row.integralFlag" class="integral-flag el-icon-coin"
+              >vip</i
             >
           </template>
         </el-table-column>
@@ -94,14 +104,12 @@
       </el-table>
       <el-pagination
         background
-        :page-sizes="[10, 20, 30]"
         layout="prev, pager, next, sizes"
         :current-page="vipData.pageNum"
-        :default-current-page="vipData.pageNum"
-        :page-size="vipData.pageSize"
         @current-change="handleCurrentChange"
         @size-change="handleSizeChange"
         :total="vipData.totalPage"
+        :page-count="vipData.totalPage"
       />
     </div>
 
@@ -147,10 +155,12 @@
           ></el-input>
         </el-form-item>
         <el-form-item style="text-align: right">
-          <el-button type="primary" @click="addEditMember">{{
+          <el-button size="small" type="primary" @click="addEditMember">{{
             objData.memberForm.id ? "提交" : "添加"
           }}</el-button>
-          <el-button @click="dialogFormVisible = false">取消</el-button>
+          <el-button size="small" @click="dialogFormVisible = false"
+            >取消</el-button
+          >
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -174,8 +184,12 @@
           ></el-input>
         </el-form-item>
         <el-form-item style="text-align: right">
-          <el-button type="primary" @click="rechargeFunc">充值</el-button>
-          <el-button @click="rechargeFormVisible = false">取消</el-button>
+          <el-button size="small" type="primary" @click="rechargeFunc"
+            >充值</el-button
+          >
+          <el-button size="small" @click="rechargeFormVisible = false"
+            >取消</el-button
+          >
         </el-form-item>
       </el-form>
       <!-- <el-input readonly :value="rechargeForm.name" /> -->
@@ -223,11 +237,50 @@
 
     <!--积分会员-->
     <el-dialog
-      v-model="interalMemberObj.interalMemberVisible"
+      v-model="integralMemberObj.integralMemberVisible"
       width="400px"
       title="积分会员"
     >
-      
+      <el-form :model="integralMemberObj.rechargeForm" label-width="75px">
+        <el-form-item label="会员名" prop="name">
+          <el-input
+            disabled
+            v-model="integralMemberObj.rechargeForm.name"
+            autocomplete="off"
+          >
+          </el-input>
+        </el-form-item>
+        <el-form-item label="充值积分" prop="amount">
+          <el-input
+            type="number"
+            min="1"
+            v-model="integralMemberObj.rechargeForm.integral"
+            autocomplete="off"
+          ></el-input>
+        </el-form-item>
+        <el-form-item style="text-align: right">
+          <el-button
+            size="small"
+            type="primary"
+            @click="rechargeIntegralFunc"
+            >{{
+              integralMemberObj.rechargeForm.integralFlag == 0 ? "开通" : "充值"
+            }}</el-button
+          >
+          <el-button
+            v-if="!!integralMemberObj.rechargeForm.integralFlag"
+            type="danger"
+            size="small"
+            @click="delIntegralMember"
+            >删除积分会员</el-button
+          >
+          <el-button
+            size="small"
+            @click="integralMemberObj.integralMemberVisible = false"
+            >取消</el-button
+          >
+        </el-form-item>
+      </el-form>
     </el-dialog>
   </div>
 </template>
@@ -265,14 +318,15 @@ export default defineComponent({
       memberDetailVisible: false, //弹窗显示
       keyword: "",
     }); //会员详情
-    const interalMemberObj = reactive({
-      data: {
+    const integralMemberObj = reactive({
+      rechargeForm: {
         id: "",
-        interal: 0,
-        interalFlag: 0
+        name: "",
+        integral: 0,
+        integralFlag: 0,
       },
-      interalMemberVisible: false
-    }) //积分会员
+      integralMemberVisible: false,
+    }); //积分会员
     const memberFormRef: Ref<any> = ref(null); //form dom元素
     const tableRef: Ref<any> = ref(null); //table dom元素
     const keyword: Ref<string | number> = ref(""); //输入会员名或者电话查询
@@ -405,6 +459,35 @@ export default defineComponent({
       }
     };
 
+    //删除积分会员
+    const delIntegralMember = async () => {
+      const { id } = integralMemberObj.rechargeForm;
+      try {
+        const confirm = await ElMessageBox.confirm(
+          "确定要删除该积分会员信息吗？",
+          {
+            confirmButtonText: "删除",
+            cancelButtonText: "取消",
+            type: "error",
+          }
+        );
+        if (confirm === "confirm") {
+          tableLoading.value = true;
+          const { flag } = await store.dispatch(
+            "integralModel/integralDelete",
+            {
+              ids: [id],
+            }
+          );
+          if (flag) {
+            integralMemberObj.integralMemberVisible = false;
+            getVipData();
+          } else {
+            tableLoading.value = false;
+          }
+        }
+      } catch (e) {}
+    };
     //充值请求
     const rechargeFunc = async () => {
       const { id, amount } = objData.rechargeForm;
@@ -421,21 +504,34 @@ export default defineComponent({
         tableLoading.value = false;
       }
     };
-
-    //积分会员弹窗
-    const intergralMember = async(row: any) => {
-      const {
+    //充值积分请求
+    const rechargeIntegralFunc = async () => {
+      const { id, integral, integralFlag } = integralMemberObj.rechargeForm;
+      tableLoading.value = true;
+      const { flag } = await store.dispatch("integralModel/integralAdd", {
         id,
-        interal,
-        interalFlag
-      } = row
-      interalMemberObj.data = {
-        id,
-        interal,
-        interalFlag
+        integral,
+        integralFlag,
+      });
+      if (flag) {
+        ElMessage.success(integralFlag == 0 ? "开通成功！" : "充值成功！");
+        integralMemberObj.integralMemberVisible = false;
+        getVipData();
+      } else {
+        tableLoading.value = false;
       }
-      interalMemberObj.interalMemberVisible = true
-    }
+    };
+    //积分会员弹窗
+    const intergralMember = async (row: any) => {
+      const { id, integralFlag, name } = row;
+      integralMemberObj.rechargeForm = {
+        id,
+        name,
+        integral: 0,
+        integralFlag,
+      };
+      integralMemberObj.integralMemberVisible = true;
+    };
     //通过关键词，查询会员
     const handleSearch: Function = async () => {
       getVipData({
@@ -517,10 +613,11 @@ export default defineComponent({
         ElMessage.warning("消费记录全部加载完毕");
       }
     };
-    let vipData = computed(() => store.state.vipModel.data);
+    const compVipData = computed(() => store.state.vipModel.data);
+
     // const memebrForm = toRef(objData, 'memberForm')
     return {
-      vipData,
+      vipData: compVipData,
       keyword,
       tableLoading,
       handleCurrentChange,
@@ -541,11 +638,13 @@ export default defineComponent({
       handleSelectionChange,
       handleRecharge,
       rechargeFunc,
+      rechargeIntegralFunc,
       integralFormVisible,
       infiniteLoad,
       searchVipDetal,
-      interalMemberObj,
-      intergralMember
+      integralMemberObj,
+      intergralMember,
+      delIntegralMember,
     };
   },
 });
@@ -553,5 +652,12 @@ export default defineComponent({
 <style lang="less" scoped>
 :deep(.member-detail-dialog .el-dialog__body) {
   padding: 5px 20px 10px;
+}
+.integral-flag {
+  background-color: #f56c6c;
+  color: #ffffff;
+  padding: 2px 3px;
+  border-radius: 2px;
+  margin-left: 2px;
 }
 </style>

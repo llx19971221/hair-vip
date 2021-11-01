@@ -1,6 +1,6 @@
 import { createStore } from "vuex";
 import httpRequestApi from "@/utils/request"
-import vipModel from "./vipModel"
+import { vipModel, integralModel } from "./memeber"
 const {
     login
 } = httpRequestApi
@@ -26,7 +26,8 @@ const mutations = {
 
 export default createStore({
     modules: {
-        vipModel
+        vipModel,
+        integralModel
     },
     state,
     actions,

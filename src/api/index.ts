@@ -9,7 +9,10 @@ const api: {
     'vipDetail': head + '/vip/detail get',
     'vipAddEdit': head + '/vip/edit post',
     'vipDelete': head + '/vip/del delete',
-    'vipRecharge': head + '/vip/recharge post'
+    'vipRecharge': head + '/vip/recharge post',
+
+    'integralAdd': head + '/vip/integral/add post',
+    'integralDelete': head + '/vip/integral/del delete'
 }
 
 export default api
