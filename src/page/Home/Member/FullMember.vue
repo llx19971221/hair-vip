@@ -530,7 +530,7 @@ export default defineComponent({
       getVipData({
         keyword: keyword.value,
       });
-      keyword.value = "";
+      // keyword.value = "";
     };
 
     //发送请求添加或者修改会员
@@ -556,6 +556,7 @@ export default defineComponent({
     const handleCurrentChange = async (currentPage: number) => {
       getVipData({
         pageNum: currentPage,
+        keyword: keyword.value,
       });
     };
 
@@ -563,6 +564,7 @@ export default defineComponent({
     const handleSizeChange = async (pageSize: number) => {
       getVipData({
         pageSize,
+        keyword: keyword.value,
       });
     };
 
