@@ -2,13 +2,13 @@
   <el-container class="total-wrap">
     <el-aside width="200px">
       <el-menu router :default-active="active" class="el-menu-vertical-demo">
-        <el-sub-menu v-for="(item, idx) in routes" :index="`${item.name}`">
+        <el-sub-menu :index="`${routes[0].name}`">
           <template #title>
-            <i :class="`el-icon-${item.icon}`"></i>
-            <span>{{ item.zhName }}</span>
+            <i :class="`el-icon-${routes[0].icon}`"></i>
+            <span>{{ routes[0].zhName }}</span>
           </template>
           <el-menu-item
-            v-for="(item2, idx) in item.children"
+            v-for="(item2, idx) in routes[0].children"
             :route="{
               name: item2.name
             }"
@@ -18,6 +18,12 @@
             <template #title>{{ item2.zhName }}</template>
           </el-menu-item>
         </el-sub-menu>
+        <el-menu-item :index="`${routes[1].name}`">
+          <template #title>
+            <i :class="`el-icon-${routes[1].icon}`"></i>
+            <span>{{ routes[1].zhName }}</span>
+          </template>
+        </el-menu-item>
       </el-menu>
     </el-aside>
     <el-container>

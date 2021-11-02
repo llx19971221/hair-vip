@@ -5,6 +5,7 @@ const Login = () => import("@/page/Login.vue")
 const NotFound = () => import("@/page/404.vue")
 const Member = () => import("@/page/Home/Member/index.vue")
 const FullMember = () => import("@/page/Home/Member/FullMember.vue")
+const Goods = () => import("@/page/Home/Goods/Goods.vue")
 export const routes = [
     {
         path: "/",
@@ -30,13 +31,13 @@ export const routes = [
                     }, 
                 ]
             },
-            // {
-            //     path: 'member1',
-            //     name: 'member2',
-            //     component: Member,
-            //     zhName: "会员3",
-            //     icon: "user"
-            // },
+            {
+                path: 'goods',
+                name: 'goods',
+                component: Goods,
+                zhName: "商品管理",
+                icon: "goods"
+            },
             // {
             //     path: '/login',
             //     name: 'login',

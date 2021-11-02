@@ -20,8 +20,9 @@ for(let key in api) {
         const url_method_arr: Array<string> = url_method.split(" ")
         const url: string = url_method_arr[0]
         const method: string = url_method_arr[1]
+        const methodLower = method.toLowerCase()
         let data: {};
-        if(method.toLowerCase() === 'get') {
+        if(methodLower === 'get') {
             data = {
                 url,
                 method,
