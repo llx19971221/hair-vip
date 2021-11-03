@@ -1,6 +1,10 @@
 <template>
   <div class="member-wrap">
-    <div style="text-align: right" :style="{'max-height': `${btnWrapVisble ? '110px' : '0px'}`}" class="btn-wrap">
+    <div
+      style="text-align: right"
+      :style="{ 'max-height': `${btnWrapVisble ? '110px' : '0px'}` }"
+      class="btn-wrap"
+    >
       <el-button size="small" background type="primary" @click="addMember"
         >添加会员</el-button
       >
@@ -17,7 +21,13 @@
         />
       </div>
     </div>
-    <el-switch v-model="btnWrapVisble" inline-prompt active-text="打开" inactive-text="收起" />
+    <el-switch
+      v-model="btnWrapVisble"
+      inline-prompt
+      active-text="打开"
+      inactive-text="收起"
+    />
+
     <!--会员列表-->
     <div v-loading="tableLoading" class="table-wrap">
       <el-table
@@ -79,7 +89,7 @@
               icon="el-icon-goods"
               type="warning"
               size="small"
-              @click="editMember(row)"
+              @click="handleConsume(row)"
             />
             <el-button
               title="积分会员"
@@ -173,7 +183,9 @@
             min="1"
             v-model="objData.rechargeForm.amount"
             autocomplete="off"
-          ></el-input>
+          >
+            <template #append> 元 </template>
+          </el-input>
         </el-form-item>
         <el-form-item style="text-align: right">
           <el-button size="small" type="primary" @click="rechargeFunc"
@@ -208,6 +220,7 @@
         style="margin-bottom: 5px"
       />
       <el-collapse
+        v-if="memberDetailObj.memebrConsumeDetail.items.length > 0"
         v-infinite-scroll="infiniteLoad"
         style="height: 400px; overflow: auto"
       >
@@ -219,12 +232,17 @@
             }}<i
               v-if="item.detail.indexOf('充值') >= 0"
               class="el-icon-money"
-            ></i
-            ><span style="margin: 0 0 0 5px">{{ item.gmtCreate }}</span>
+            ></i>
+            <i
+              v-else-if="item.detail.indexOf('消费') >= 0"
+              class="el-icon-goods"
+            ></i>
+            <span style="margin: 0 0 0 5px">{{ item.gmtCreate }}</span>
           </template>
           {{ item.detail }}
         </el-collapse-item>
       </el-collapse>
+      <el-empty v-else description="暂无消费数据"></el-empty>
     </el-dialog>
 
     <!--积分会员-->
@@ -274,6 +292,95 @@
         </el-form-item>
       </el-form>
     </el-dialog>
+
+    <!--结账-->
+    <el-dialog
+      :close-on-click-modal="false"
+      v-model="consumeObj.visible"
+      width="350px"
+      custom-class="member-detail-dialog"
+    >
+      <template #title>
+        <div>结账</div>
+        <div v-if="!!consumeObj.form.row.integralFlag">
+          <div>{{ consumeObj.form.row.name }}</div>
+          <div style="color: #f56c6c">积分会员</div>
+          <strong>剩余积分：{{ consumeObj.form.row.integral }}</strong>
+        </div>
+        <div v-else>
+          <div>{{ consumeObj.form.row.name }}</div>
+          <div style="color: gray">普通会员</div>
+        </div>
+      </template>
+      <el-form
+        :model="consumeObj.form"
+        label-width="75px"
+      >
+        <el-form-item label="消费项" prop="consumptionProject">
+          <el-select
+            v-model="consumeObj.form.consumptionProject"
+            multiple
+            filterable
+            @change="consumeOptionsChange"
+            placeholder="请选择消费项"
+          >
+            <el-option
+              v-for="item in consumeObj.goodsList"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            >
+              <span style="float: left">{{ item.name }}</span>
+              <span
+                style="
+                  float: right;
+                  color: var(--el-text-color-secondary);
+                  font-size: 13px;
+                "
+                >{{ item.price }}元</span
+              >
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="消费金额" prop="amount">
+          <el-input
+            type="number"
+            min="0"
+            v-model="consumeObj.form.amount"
+            autocomplete="off"
+          >
+            <template #append> 元 </template>
+          </el-input>
+        </el-form-item>
+        <el-form-item
+          v-if="!!consumeObj.form.row.integralFlag"
+          label="使用积分"
+          prop="integralAccount"
+        >
+          <el-input-number v-model="consumeObj.form.integralAccount" :min="0" :max="consumeObj.form.row.integral" @change="handleChange" />
+        </el-form-item>
+        <el-form-item label="密码" prop="password">
+          <el-input
+            type="password"
+            v-model="consumeObj.form.password"
+            autocomplete="off"
+          ></el-input>
+        </el-form-item>
+        <el-form-item style="text-align: right">
+          <el-button
+            :loading="consumeObj.loading"
+            size="small"
+            type="primary"
+            @click="consumeFunc"
+            >结账</el-button
+          >
+          <el-button size="small" @click="consumeObj.visible = false"
+            >取消</el-button
+          >
+        </el-form-item>
+      </el-form>
+      <!-- <el-input readonly :value="rechargeForm.name" /> -->
+    </el-dialog>
   </div>
 </template>
 
@@ -320,6 +427,18 @@ export default defineComponent({
       },
       integralMemberVisible: false,
     }); //积分会员
+    const consumeObj = reactive({
+      form: {
+        amount: 0,
+        consumptionProject: [],
+        row: { id: "", integral: 0 },
+        integralAccount: 0,
+        password: "",
+      },
+      goodsList: [],
+      visible: false,
+      loading: false
+    }); //积分会员
     const memberFormRef: Ref<any> = ref(null); //form dom元素
     const tableRef: Ref<any> = ref(null); //table dom元素
     const keyword: Ref<string | number> = ref(""); //输入会员名或者电话查询
@@ -350,6 +469,41 @@ export default defineComponent({
       tableLoading.value = false;
     };
 
+    //结账弹出
+    const handleConsume: Function = async (row: any) => {
+      const {
+        flag,
+        data: { data: goodsList },
+      } = await store.dispatch("goodsModel/goodsList");
+      if (!flag || goodsList.length <= 0) {
+        ElMessage.error("");
+        return;
+      }
+      consumeObj.form = {
+        amount: 0,
+        consumptionProject: [],
+        row: Object.assign({}, row),
+        integralAccount: 0,
+        password: "",
+      };
+      consumeObj.goodsList = goodsList;
+      consumeObj.visible = true;
+    };
+
+    //当消费项目发生变化
+    const consumeOptionsChange = async (val: any) => {
+      const { goodsList, form } = consumeObj;
+      const amount = val
+        .map((selecId: number) => {
+          for (const { id, price } of goodsList) {
+            if (selecId === id) {
+              return price;
+            }
+          }
+        })
+        .reduce((x: number, y: number) => x + y, 0);
+      consumeObj.form = { ...form, amount };
+    };
     //添加会员
     const addMember: Function = async () => {
       dialogFormVisible.value = true;
@@ -497,6 +651,31 @@ export default defineComponent({
         tableLoading.value = false;
       }
     };
+
+    //结账请求
+    const consumeFunc = async () => {
+      const {
+        row: { id },
+        integralAccount,
+        password,
+        amount,
+        consumptionProject,
+      } = consumeObj.form;
+      consumeObj.loading = true;
+      const { flag } = await store.dispatch("vipModel/vipConsume", {
+        id,
+        integralAccount,
+        password,
+        amount,
+        consumptionProject,
+      });
+      if (flag) {
+        consumeObj.visible = false;
+        getVipData();
+      }
+      consumeObj.loading = false;
+    };
+
     //充值积分请求
     const rechargeIntegralFunc = async () => {
       const { id, integral, integralFlag } = integralMemberObj.rechargeForm;
@@ -641,6 +820,10 @@ export default defineComponent({
       integralMemberObj,
       intergralMember,
       delIntegralMember,
+      consumeObj,
+      handleConsume,
+      consumeOptionsChange,
+      consumeFunc
     };
   },
 });
@@ -651,7 +834,7 @@ export default defineComponent({
 }
 .btn-wrap {
   overflow: hidden;
-  transition: .4s ease;
+  transition: 0.4s ease;
 }
 .integral-flag {
   background-color: #f56c6c;

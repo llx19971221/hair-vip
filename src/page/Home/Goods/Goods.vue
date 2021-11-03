@@ -25,7 +25,9 @@
           </div>
           <div>
             <el-button size="small" @click="modifyGoods(item)">编辑</el-button>
-            <el-button size="small" type='danger' @click="deleteGoods(item.id)">删除</el-button>
+            <el-button size="small" type="danger" @click="deleteGoods(item.id)"
+              >删除</el-button
+            >
           </div>
         </el-card>
       </el-col>
@@ -58,7 +60,9 @@
           type="number"
           min="0"
           placeholder="价格"
-        />
+        >
+          <template #append> 元 </template>
+        </el-input>
       </el-form-item>
       <el-form-item>
         <el-button size="small" @click="addModifyGoodsRequest" type="primary">
@@ -80,9 +84,13 @@ import {
   addGoods,
   addModifyGoodsRequestFactory,
   addModifyFormEl,
-  modifyGoods
+  modifyGoods,
 } from "./goodsAddModify";
-import { getGoodsListFactory, goodsListObj, deleteGoodsFactory } from "./goodsList";
+import {
+  getGoodsListFactory,
+  goodsListObj,
+  deleteGoodsFactory,
+} from "./goodsList";
 export default defineComponent({
   setup() {
     const store: Store<{}> = useStore();
@@ -91,7 +99,10 @@ export default defineComponent({
       store,
       getGoodsList
     );
-    const deleteGoods: (id: number) => any = deleteGoodsFactory(store, getGoodsList)
+    const deleteGoods: (id: number) => any = deleteGoodsFactory(
+      store,
+      getGoodsList
+    );
     onMounted(() => getGoodsList());
     return {
       goodsObj,
@@ -100,7 +111,7 @@ export default defineComponent({
       addModifyGoodsRequest,
       addModifyFormEl,
       modifyGoods,
-      deleteGoods
+      deleteGoods,
     };
   },
 });

@@ -4,7 +4,8 @@ const {
     vipDetail,
     vipAddEdit,
     vipDelete,
-    vipRecharge
+    vipRecharge,
+    vipConsume
 } = httpRequestApi
 
 const state: {
@@ -68,6 +69,12 @@ const actions = {
     //充钱
     async vipRecharge(_: any, params: {}) {
         const res: any = await vipRecharge(params)
+        return res
+    },
+
+    //结账
+    async vipConsume(_: any, params: {}) {
+        const res: any = await vipConsume(params)
         return res
     }
 }

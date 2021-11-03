@@ -10,6 +10,7 @@ const api: {
     'vipAddEdit': head + '/vip/edit post',
     'vipDelete': head + '/vip/del delete',
     'vipRecharge': head + '/vip/recharge post',
+    'vipConsume': head + '/vip/consume post',
 
     'integralAdd': head + '/vip/integral/add post',
     'integralDelete': head + '/vip/integral/del delete',
