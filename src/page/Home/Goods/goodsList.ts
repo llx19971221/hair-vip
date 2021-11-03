@@ -33,7 +33,7 @@ export const deleteGoodsFactory = (store: Store<any>, cb: Function | null) => {
                 const {
                     flag
                 } = await store.dispatch('goodsModel/goodsDelete', {
-                    id
+                    ids: [id]
                 })
                 if (flag) {
                     ElMessage.success("删除成功")
