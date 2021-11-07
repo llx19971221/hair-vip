@@ -11,7 +11,7 @@ interface InterceptorsResponseData {
 }
 
 const fnObj: {
-    [key: string]: (params: []|{[key: string]: any}) => AxiosPromise<unknown>
+    [key: string]: (params: {[key: string]: any}) => any
 } = {}
 
 for(let key in api) {
