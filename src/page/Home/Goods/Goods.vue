@@ -64,6 +64,15 @@
           <template #append> 元 </template>
         </el-input>
       </el-form-item>
+      <el-form-item v-if="goodsObj.data.type === 'modify'" label="优先级" prop="sort">
+        <el-input-number
+          v-model="goodsObj.data.sort"
+          type="number"
+          min="0"
+          placeholder="优先级"
+        >
+        </el-input-number>
+      </el-form-item>
       <el-form-item>
         <el-button size="small" @click="addModifyGoodsRequest" type="primary">
           提交

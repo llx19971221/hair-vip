@@ -18,7 +18,10 @@ const api: {
     'goodsAdd': head + '/consume/set post',
     'goodsList': head + '/consume/list get',
     'goodsModify': head + '/consume/modify post',
-    'goodsDelete': head + '/consume/del delete'
+    'goodsDelete': head + '/consume/del delete',
+
+    'achievementList': head + '/achievement/list get',
+    'achievementDetail': head + '/achievement/detail get'
 }
 
 export default api

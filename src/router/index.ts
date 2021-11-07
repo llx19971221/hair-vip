@@ -6,6 +6,8 @@ const NotFound = () => import("@/page/404.vue")
 const Member = () => import("@/page/Home/Member/index.vue")
 const FullMember = () => import("@/page/Home/Member/FullMember.vue")
 const Goods = () => import("@/page/Home/Goods/Goods.vue")
+const Achievement = () => import("@/page/Home/Achievement/index.vue")
+const AchievementDetail = () => import("@/page/Home/Achievement/detail.vue")
 export const routes = [
     {
         path: "/",
@@ -18,6 +20,7 @@ export const routes = [
                 component: Member,
                 zhName: "会员",
                 icon: "postcard",
+                meta: { index: '0' },
                 children: [
                     {
                         path: '',
@@ -25,10 +28,11 @@ export const routes = [
                         component: FullMember,
                         zhName: "正式会员",
                         icon: "",
+                        meta: { index: '0-0' },
                         children: [
-                            
+
                         ]
-                    }, 
+                    },
                 ]
             },
             {
@@ -36,8 +40,25 @@ export const routes = [
                 name: 'goods',
                 component: Goods,
                 zhName: "商品管理",
+                meta: { index: '1' },
                 icon: "goods"
             },
+            {
+                path: 'achievement',
+                name: 'achievement',
+                component: Achievement,
+                zhName: "劳动业绩",
+                meta: { index: '2' },
+                icon: "money"
+            },
+            {
+                path: 'achievementDetail/:kind/:date',
+                name: 'achievementDetail',
+                component: AchievementDetail,
+                zhName: "劳动详情",
+                meta: { index: '2' },
+                icon: "money"
+            }
             // {
             //     path: '/login',
             //     name: 'login',

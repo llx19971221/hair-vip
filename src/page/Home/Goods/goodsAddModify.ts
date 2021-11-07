@@ -1,4 +1,4 @@
-import { reactive, ReactiveEffectOptions, ref, Ref } from "vue";
+import { reactive, ref, Ref } from "vue";
 import { rules } from "./rules";
 import { Store } from "vuex"
 import { ElMessage } from "element-plus";
@@ -12,6 +12,7 @@ export const goodsObj = reactive({
         name: "",
         price: 0,
         pid: 0,
+        sort: 0,
         type: "add",
     },
 });
@@ -22,6 +23,7 @@ export const addGoods = () => {
         name: "",
         price: 0,
         pid: 0,
+        sort: 0,
         type: "add",
     };
     goodsObj.visible = true;
@@ -30,17 +32,20 @@ export const addGoods = () => {
 export const modifyGoods = (item: {
     id: string,
     name: string,
-    price: number
+    price: number,
+    sort: number
 }) => {
     const {
         id,
         name,
-        price
+        price,
+        sort
     } = item
     goodsObj.data = {
         id,
         name,
         price,
+        sort,
         pid: 0,
         type: "modify",
     };

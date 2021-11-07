@@ -36,14 +36,31 @@ for(let key in api) {
             }
         }
         if(key !== 'login') {
+            let token = localStorage.getItem('token')
+            token = token ? token : ''
             data = {
                 ...data,
                 headers: {
-                    'token': '123123'
+                    token
                 }
             }
         }
-        return axios(data)
+        return axios(data).catch((err: any) => {
+            console.dir(err);
+            
+            const code = err.response.status
+            switch(code) {
+                case 401:
+                    router.replace({
+                        name: "login"
+                    })
+                    break
+                default:
+                    ElMessage.error('服务端错误');
+                    break
+            }
+            ElMessage.error('登录失效!');
+        })
     }
 }
 
@@ -58,20 +75,12 @@ axios.interceptors.response.use((res) => {
     if (code !== '200') {
         flag = false
         ElMessage.error(msg)
-        switch(code) {
-            case '401':
-                router.replace({
-                    name: "login"
-                })
-                break
-            default:
-                break
-        }
     }
     return {
         flag,
         data: res.data
     }
 })
+
 export default fnObj
 

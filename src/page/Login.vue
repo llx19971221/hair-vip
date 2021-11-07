@@ -1,5 +1,6 @@
 <template>
   <div class="login-wrap">
+    <img src="/logo.jpg" style="width: 100%" alt="logo"/>
     <el-form
       :model="loginForm"
       status-icon
@@ -18,6 +19,7 @@
           v-model="loginForm.password"
           type="password"
           autocomplete="off"
+          @keypress.enter="loginFn"
         ></el-input>
       </el-form-item>
       <el-form-item>
@@ -61,7 +63,7 @@ export default defineComponent({
         ElMessage.success("登录成功");
         // localStorage.setItem('token', token)
         router.replace({
-          name: 'home'
+          name: 'fullMember'
         })
       }
     }
