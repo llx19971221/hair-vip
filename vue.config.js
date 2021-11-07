@@ -2,6 +2,9 @@ const path = require('path')
 
 module.exports = {
   lintOnSave: false,
+  publicPath: "./",
+  productionSourceMap: false,
+  assetsDir : "static",
   configureWebpack: {
     resolve: {
       alias: {

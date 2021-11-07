@@ -1,7 +1,7 @@
 <template>
   <el-container class="total-wrap">
     <el-aside width="200px">
-      <img style="width: 100%" src="/logo.png" alt="" />
+      <img style="width: 100%" src="/沐溪美发工作室/logo.png" alt="" />
       <el-menu :default-active="active" router class="el-menu-vertical-demo">
         <el-sub-menu :index="routes[0].meta.index">
           <template #title>
@@ -55,7 +55,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { useStore } from "vuex"
 export default defineComponent({
   setup() {
-    // console.log(a, b, c);
     const store: any = useStore()
     const route: any = useRoute()
     const router: any = useRouter()

@@ -1,4 +1,4 @@
-const head: string = '/api';
+const head: string = process.env.NODE_ENV === 'development' ? '/api' : 'http://106.14.126.114:8080';
 
 const api: {
     [key: string]: string

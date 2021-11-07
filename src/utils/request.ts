@@ -1,5 +1,6 @@
 import api from "@/api"
-import axios, { AxiosPromise } from "axios"
+import axios from "axios"
+import qss from 'querystring'
 import { ElMessage } from "element-plus"
 import router from "@/router"
 interface InterceptorsResponseData {
@@ -11,45 +12,44 @@ interface InterceptorsResponseData {
 }
 
 const fnObj: {
-    [key: string]: (params: {[key: string]: any}) => any
+    [key: string]: (params: { [key: string]: any }) => any
 } = {}
 
-for(let key in api) {
+for (let key in api) {
     fnObj[key] = (params: {} = {}) => {
         let url_method: string = api[key]
         const url_method_arr: Array<string> = url_method.split(" ")
         const url: string = url_method_arr[0]
         const method: string = url_method_arr[1]
         const methodLower = method.toLowerCase()
-        let data: {};
-        if(methodLower === 'get') {
+        let data: {[key:string]: any};
+        if (methodLower === 'get') {
             data = {
                 url,
                 method,
-                params
+                params,
+                headers: {}
             }
-        }else {
+        } else {
             data = {
                 url,
                 method,
-                data: params
+                data: params,
+                headers: {}
             }
+
         }
-        if(key !== 'login') {
+        data = {
+            ...data
+        }
+        if (key !== 'login') {
             let token = localStorage.getItem('token')
             token = token ? token : ''
-            data = {
-                ...data,
-                headers: {
-                    token
-                }
-            }
+            data['headers']['token'] = token
         }
         return axios(data).catch((err: any) => {
-            console.dir(err);
-            
             const code = err.response.status
-            switch(code) {
+            switch (code) {
                 case 401:
                     router.replace({
                         name: "login"
@@ -63,6 +63,7 @@ for(let key in api) {
         })
     }
 }
+
 
 axios.interceptors.response.use((res) => {
     const {
