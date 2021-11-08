@@ -301,7 +301,10 @@
       custom-class="member-detail-dialog"
     >
       <template #title>
-        <div>结账</div>
+        <div>
+          结账<i v-if="!!consumeObj.form.row.password" class="el-icon-lock"></i
+          ><i v-else class="el-icon-unlock"></i>
+        </div>
         <div v-if="!!consumeObj.form.row.integralFlag">
           <div>{{ consumeObj.form.row.name }}</div>
           <div style="color: #f56c6c">积分会员</div>
@@ -312,10 +315,7 @@
           <div style="color: gray">普通会员</div>
         </div>
       </template>
-      <el-form
-        :model="consumeObj.form"
-        label-width="75px"
-      >
+      <el-form :model="consumeObj.form" label-width="75px">
         <el-form-item label="消费项" prop="consumptionProject">
           <el-select
             v-model="consumeObj.form.consumptionProject"
@@ -357,9 +357,14 @@
           label="使用积分"
           prop="integralAccount"
         >
-          <el-input-number v-model="consumeObj.form.integralAccount" :min="0" :max="consumeObj.form.row.integral" @change="handleChange" />
+          <el-input-number
+            v-model="consumeObj.form.integralAccount"
+            :min="0"
+            :max="consumeObj.form.row.integral"
+            @change="handleChange"
+          />
         </el-form-item>
-        <el-form-item label="密码" prop="password">
+        <el-form-item v-if="!!consumeObj.form.row.password" label="密码" prop="password">
           <el-input
             type="password"
             v-model="consumeObj.form.password"
@@ -437,7 +442,7 @@ export default defineComponent({
       },
       goodsList: [],
       visible: false,
-      loading: false
+      loading: false,
     }); //积分会员
     const memberFormRef: Ref<any> = ref(null); //form dom元素
     const tableRef: Ref<any> = ref(null); //table dom元素
@@ -476,7 +481,7 @@ export default defineComponent({
         data: { data: goodsList },
       } = await store.dispatch("goodsModel/goodsList");
       if (!flag || goodsList.length <= 0) {
-        ElMessage.error("");
+        ElMessage.error("没有商品，请添加商品");
         return;
       }
       consumeObj.form = {
@@ -661,6 +666,10 @@ export default defineComponent({
         amount,
         consumptionProject,
       } = consumeObj.form;
+      if(consumptionProject.length <= 0) {
+        ElMessage.error("请选择商品")
+        return
+      } 
       consumeObj.loading = true;
       const { flag } = await store.dispatch("vipModel/vipConsume", {
         id,
@@ -823,7 +832,7 @@ export default defineComponent({
       consumeObj,
       handleConsume,
       consumeOptionsChange,
-      consumeFunc
+      consumeFunc,
     };
   },
 });
