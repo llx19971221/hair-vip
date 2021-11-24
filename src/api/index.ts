@@ -21,7 +21,9 @@ const api: {
     'goodsDelete': head + '/consume/del delete',
 
     'achievementList': head + '/achievement/list get',
-    'achievementDetail': head + '/achievement/detail get'
+    'achievementDetail': head + '/achievement/detail get',
+
+    'backups': head + '/data/backups get'
 }
 
 export default api

@@ -18,6 +18,7 @@
           v-model="keyword"
           placeholder="请输入会员名或电话"
           @keypress.enter="handleSearch"
+          @input="inputBounceHandleSearch"
         />
       </div>
     </div>
@@ -297,7 +298,7 @@
     <el-dialog
       :close-on-click-modal="false"
       v-model="consumeObj.visible"
-      width="350px"
+      width="500px"
       custom-class="member-detail-dialog"
     >
       <template #title>
@@ -308,49 +309,41 @@
         <div v-if="!!consumeObj.form.row.integralFlag">
           <div>{{ consumeObj.form.row.name }}</div>
           <div style="color: #f56c6c">积分会员</div>
+          <div>
+            <strong>余额：{{ consumeObj.form.row.amount }}元</strong>
+          </div>
           <strong>剩余积分：{{ consumeObj.form.row.integral }}</strong>
         </div>
         <div v-else>
           <div>{{ consumeObj.form.row.name }}</div>
           <div style="color: gray">普通会员</div>
+          <div>
+            <strong>余额：{{ consumeObj.form.row.amount }}元</strong>
+          </div>
         </div>
       </template>
       <el-form :model="consumeObj.form" label-width="75px">
-        <el-form-item label="消费项" prop="consumptionProject">
-          <el-select
-            v-model="consumeObj.form.consumptionProject"
-            multiple
-            filterable
-            @change="consumeOptionsChange"
-            placeholder="请选择消费项"
+        <el-form-item class="consume-project" label="消费项">
+          <el-badge
+            @contextmenu.prevent="handleChangeConsumeProject(item.id, '-')"
+            :value="consumeObj.consumptionProjectObj?.[item.id] ?? 0"
+            @click="handleChangeConsumeProject(item.id, '+')"
+            v-for="item in consumeObj.goodsList"
+            :key="item.id"
           >
-            <el-option
-              v-for="item in consumeObj.goodsList"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id"
+            <el-button size="small"
+              >{{ item.name }}&nbsp;&nbsp;&nbsp;{{ item.price }}元</el-button
             >
-              <span style="float: left">{{ item.name }}</span>
-              <span
-                style="
-                  float: right;
-                  color: var(--el-text-color-secondary);
-                  font-size: 13px;
-                "
-                >{{ item.price }}元</span
-              >
-            </el-option>
-          </el-select>
+          </el-badge>
         </el-form-item>
         <el-form-item label="消费金额" prop="amount">
-          <el-input
+          <el-input-number
             type="number"
-            min="0"
+            :min="0"
             v-model="consumeObj.form.amount"
             autocomplete="off"
-          >
-            <template #append> 元 </template>
-          </el-input>
+          />
+          元
         </el-form-item>
         <el-form-item
           v-if="!!consumeObj.form.row.integralFlag"
@@ -360,11 +353,13 @@
           <el-input-number
             v-model="consumeObj.form.integralAccount"
             :min="0"
-            :max="consumeObj.form.row.integral"
-            @change="handleChange"
           />
         </el-form-item>
-        <el-form-item v-if="!!consumeObj.form.row.password" label="密码" prop="password">
+        <el-form-item
+          v-if="!!consumeObj.form.row.password"
+          label="密码"
+          prop="password"
+        >
           <el-input
             type="password"
             v-model="consumeObj.form.password"
@@ -399,12 +394,14 @@ import {
   reactive,
   nextTick,
 } from "vue";
+import { debounce } from "@/utils";
 import { useStore, Store } from "vuex";
 import { memberRules } from "./rules";
 import { ElMessage, ElMessageBox } from "element-plus";
 export default defineComponent({
   setup() {
     const store: Store<any> = useStore();
+    let enterPressed: boolean = false;
     const tableLoading: Ref<boolean> = ref(false); //table loading
     const btnWrapVisble: Ref<boolean> = ref(true); //是否收起 默认打开
     const dialogFormVisible: Ref<boolean> = ref(false); //添加，编辑会员弹窗是否显示
@@ -440,10 +437,12 @@ export default defineComponent({
         integralAccount: 0,
         password: "",
       },
+      consumptionProjectObj: {},
       goodsList: [],
       visible: false,
       loading: false,
     }); //积分会员
+
     const memberFormRef: Ref<any> = ref(null); //form dom元素
     const tableRef: Ref<any> = ref(null); //table dom元素
     const keyword: Ref<string | number> = ref(""); //输入会员名或者电话查询
@@ -468,6 +467,10 @@ export default defineComponent({
       pageSize?: number;
       keyword?: number | string;
     }) => {
+      if (enterPressed) {
+        enterPressed = false;
+        return;
+      }
       tableLoading.value || (tableLoading.value = true);
 
       await store.dispatch("vipModel/getVipList", params);
@@ -484,6 +487,7 @@ export default defineComponent({
         ElMessage.error("没有商品，请添加商品");
         return;
       }
+      consumeObj.consumptionProjectObj = {};
       consumeObj.form = {
         amount: 0,
         consumptionProject: [],
@@ -495,25 +499,19 @@ export default defineComponent({
       consumeObj.visible = true;
     };
 
-    //当消费项目发生变化
-    const consumeOptionsChange = async (val: any) => {
-      const { goodsList, form } = consumeObj;
-      const amount = val
-        .map((selecId: number) => {
-          for (const { id, price } of goodsList) {
-            if (selecId === id) {
-              return price;
-            }
-          }
-        })
-        .reduce((x: number, y: number) => x + y, 0);
-      consumeObj.form = { ...form, amount };
-    };
     //添加会员
     const addMember: Function = async () => {
+      objData.memberForm = {
+        id: "",
+        name: "",
+        password: "",
+        phoneNum: "",
+        amount: 0,
+      };
+      memberFormRef.value.resetFields();
       dialogFormVisible.value = true;
       nextTick(() => {
-        memberFormRef.value.resetFields();
+        dialogFormVisible.value = true;
       });
     };
 
@@ -666,10 +664,10 @@ export default defineComponent({
         amount,
         consumptionProject,
       } = consumeObj.form;
-      if(consumptionProject.length <= 0) {
-        ElMessage.error("请选择商品")
-        return
-      } 
+      if (consumptionProject.length <= 0) {
+        ElMessage.error("请选择商品");
+        return;
+      }
       consumeObj.loading = true;
       const { flag } = await store.dispatch("vipModel/vipConsume", {
         id,
@@ -679,6 +677,7 @@ export default defineComponent({
         consumptionProject,
       });
       if (flag) {
+        ElMessage.success("结账完毕，欢迎下次光临！");
         consumeObj.visible = false;
         getVipData();
       }
@@ -713,11 +712,21 @@ export default defineComponent({
       };
       integralMemberObj.integralMemberVisible = true;
     };
-    //通过关键词，查询会员
-    const handleSearch: Function = async () => {
+
+    //输入关键词就查，节流，查询会员
+    const inputBounceHandleSearch = debounce(() => {
       getVipData({
         keyword: keyword.value,
       });
+      // keyword.value = "";
+    }, 1000);
+
+    //通过关键词，查询会员
+    const handleSearch: Function = () => {
+      getVipData({
+        keyword: keyword.value,
+      });
+      enterPressed = true;
       // keyword.value = "";
     };
 
@@ -796,6 +805,41 @@ export default defineComponent({
         ElMessage.warning("消费记录全部加载完毕");
       }
     };
+
+    //添加消费项
+    const handleChangeConsumeProject = async (id: number, type: string) => {
+      const { consumptionProjectObj, goodsList, form } = consumeObj as {
+        consumptionProjectObj: { [key: string]: any };
+        [key: string]: any;
+      };
+      let num = consumptionProjectObj?.[id] ?? 0;
+      if (type === "+") {
+        num++;
+      } else {
+        num = num <= 0 ? 0 : --num;
+      }
+      const newconsumProjectObj: { [key: string]: any } = {
+        ...consumptionProjectObj,
+        [id]: num,
+      };
+      const consumptionProject: Array<number> = [];
+      const amount = (
+        Object.keys(newconsumProjectObj).map((changeId: any) => {
+          changeId = parseInt(changeId);
+          for (const { id, price } of goodsList) {
+            if (changeId === id) {
+              const num: number = newconsumProjectObj[changeId];
+              for (let idx = 0; idx < num; idx++) {
+                consumptionProject.push(changeId);
+              }
+              return price * newconsumProjectObj[changeId];
+            }
+          }
+        }) as Array<number>
+      ).reduce((x: number, y: number) => x + y, 0);
+      consumeObj.consumptionProjectObj = newconsumProjectObj;
+      consumeObj.form = { ...form, amount, consumptionProject };
+    };
     const compVipData = computed(() => store.state.vipModel.data);
 
     // const memebrForm = toRef(objData, 'memberForm')
@@ -807,6 +851,7 @@ export default defineComponent({
       handleCurrentChange,
       handleSizeChange,
       handleSearch,
+      inputBounceHandleSearch,
       tableRef,
       objData,
       dialogFormVisible,
@@ -831,8 +876,8 @@ export default defineComponent({
       delIntegralMember,
       consumeObj,
       handleConsume,
-      consumeOptionsChange,
       consumeFunc,
+      handleChangeConsumeProject,
     };
   },
 });
@@ -851,5 +896,16 @@ export default defineComponent({
   padding: 2px 3px;
   border-radius: 2px;
   margin-left: 2px;
+}
+:deep(.consume-project .el-form-item__content) {
+  max-height: 110px;
+  overflow: auto;
+  padding: 8px 0 0 0;
+  .el-badge {
+    margin: 5px 0;
+  }
+  .el-badge:nth-child(n + 1) {
+    margin-left: 20px;
+  }
 }
 </style>

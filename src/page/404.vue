@@ -1,5 +1,5 @@
 <template>
-    404 not found
+    页面不存在
 </template>
 
 <script lang="ts">

@@ -1,7 +1,7 @@
 <template>
   <el-container class="total-wrap">
     <el-aside width="200px">
-      <img style="width: 100%" src="/沐溪美发工作室/logo.png" alt="" />
+      <img style="width: 100%" src="/logo.jpg" alt="" />
       <el-menu :default-active="active" router class="el-menu-vertical-demo">
         <el-sub-menu :index="routes[0].meta.index">
           <template #title>
@@ -29,6 +29,7 @@
     </el-aside>
     <el-container>
       <el-header>
+        <el-button style="margin-right: 5px;" icon="el-icon-document-copy" circle title="备份" size="small" @click="backups"/>
         <el-dropdown>
           <span class="el-dropdown-link">
             <i class="el-icon-user"></i>{{userName}}
@@ -49,10 +50,11 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref, Ref, watch } from "vue";
+import { defineComponent, ref, Ref, watch } from "vue";
 import { routes } from "@/router";
 import { useRoute, useRouter } from 'vue-router'
 import { useStore } from "vuex"
+import { ElMessage } from "element-plus";
 export default defineComponent({
   setup() {
     const store: any = useStore()
@@ -64,6 +66,15 @@ export default defineComponent({
       localStorage.removeItem('username')
       router.replace("/login")
     }
+    const backups = async () => {
+      const {flag, data} = await store.dispatch('backups')
+      if(flag) {
+        ElMessage.success(data.data)
+      }else {
+        ElMessage.error(data.data)
+      }
+    }
+
     watch(route, (newVal: any, oldVal: any) => {
       active.value = newVal.meta.index
     })
@@ -72,7 +83,8 @@ export default defineComponent({
       routes: routes[0].children,
       active,
       userName,
-      exitLogin
+      exitLogin,
+      backups
     };
   },
 });

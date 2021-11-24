@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router"
-
+const publicPath = process.env.NODE_ENV === "production" ? "/" : "/"
 const Home = () => import("@/page/Home/index.vue")
 const Login = () => import("@/page/Login.vue")
 const NotFound = () => import("@/page/404.vue")
@@ -10,7 +10,7 @@ const Achievement = () => import("@/page/Home/Achievement/index.vue")
 const AchievementDetail = () => import("@/page/Home/Achievement/detail.vue")
 export const routes = [
     {
-        path: "/",
+        path: publicPath,
         name: "home",
         component: Home,
         children: [
@@ -77,19 +77,19 @@ export const routes = [
         ]
     },
     {
-        path: '/login',
+        path: publicPath + 'login',
         name: 'login',
         component: Login
     },
     {
-        path: '/:pathMatch(.*)*',
+        path: publicPath + ':pathMatch(.*)*',
         name: 'notFound',
         component: NotFound
     }
 ]
 
 const router = createRouter({
-    history: createWebHistory(),
+    history: createWebHistory(publicPath),
     routes,
 });
 

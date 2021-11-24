@@ -9,7 +9,8 @@
       placeholder="按照消息内容搜索"
       prefix-icon="el-icon-search"
       v-model="achievementData.params.keyword"
-      @keypress.enter="getAchievementTable"
+      @keypress.enter="handelGetAchievementTable"
+      @input="inputBounceGetAchievementTable"
     />
   </el-radio-group>
   <div v-loading="achievementData.tableLoading">
@@ -40,10 +41,12 @@
 import { defineComponent, onMounted, reactive } from "vue";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
+import { debounce } from "@/utils"
 export default defineComponent({
   setup() {
     const store = useStore();
     const router: any = useRouter();
+    let enterPressed: boolean = false;
     enum AchievementType {
       充值 = 1,
       消费,
@@ -62,7 +65,20 @@ export default defineComponent({
       tableLoading: false,
     });
 
+    const inputBounceGetAchievementTable =  debounce(() => {
+      getAchievementTable()
+    }, 1000)
+
+    const handelGetAchievementTable = () => {
+      getAchievementTable()
+      enterPressed = true
+    }
+
     const getAchievementTable = async () => {
+      if (enterPressed) {
+        enterPressed = false;
+        return
+      }
       const { params } = achievementData;
       achievementData.tableLoading = true;
       const {
@@ -122,7 +138,8 @@ export default defineComponent({
       handlePageChange,
       handlePageSizeChange,
       handleRowClick,
-      getAchievementTable
+      handelGetAchievementTable,
+      inputBounceGetAchievementTable
     };
   },
 });

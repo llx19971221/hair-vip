@@ -4,7 +4,8 @@ import { vipModel, integralModel } from "./memeber"
 import goodsModel from "./goodsModel"
 import achievementModel from "./achievementModel"
 const {
-    login
+    login,
+    backups
 } = httpRequestApi
 
 const state = {
@@ -30,6 +31,10 @@ const actions = {
             localStorage.setItem("token", token)
             localStorage.setItem("username", username)
         }
+        return res
+    },
+    async backups(_: any) {
+        const res = await backups({})
         return res
     }
 }

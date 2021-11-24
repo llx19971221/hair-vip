@@ -2,9 +2,9 @@ const path = require('path')
 
 module.exports = {
   lintOnSave: false,
-  publicPath: "./",
+  publicPath: process.env.NODE_ENV === "production" ? "/" : "/",
   productionSourceMap: false,
-  assetsDir : "static",
+  assetsDir: 'static',
   configureWebpack: {
     resolve: {
       alias: {
