@@ -350,10 +350,7 @@
           label="使用积分"
           prop="integralAccount"
         >
-          <el-input-number
-            v-model="consumeObj.form.integralAccount"
-            :min="0"
-          />
+          <el-input-number v-model="consumeObj.form.integralAccount" :min="0" />
         </el-form-item>
         <el-form-item
           v-if="!!consumeObj.form.row.password"
@@ -501,16 +498,15 @@ export default defineComponent({
 
     //添加会员
     const addMember: Function = async () => {
-      objData.memberForm = {
-        id: "",
-        name: "",
-        password: "",
-        phoneNum: "",
-        amount: 0,
-      };
       dialogFormVisible.value = true;
       nextTick(() => {
-        memberFormRef.value.resetFields();
+        objData.memberForm = {
+          id: "",
+          name: "",
+          password: "",
+          phoneNum: "",
+          amount: 0,
+        };
       });
     };
 

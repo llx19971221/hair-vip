@@ -13,7 +13,7 @@ export const amountPriceValidata = (rule: any, value: any, cb: Function) => {
     }
 }
 export const memberRules = {
-    phoneNum: [{ required: true, message: "必须输入电话"}, { validator: phoneNumValidate, trigger: "blur" }],
+    phoneNum: [{ required: true, message: "必须输入电话", trigger: "blur"}, { validator: phoneNumValidate, trigger: "blur" }],
     name: [{ required: true, message: "必须输入会员名", trigger: "blur" }],
     amount: [{required: true, message: "必须输入金额", trigger: "blur"}, {validator: amountPriceValidata, trigger: "blur"}]
 };
