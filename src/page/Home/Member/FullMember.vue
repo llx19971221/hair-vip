@@ -508,10 +508,9 @@ export default defineComponent({
         phoneNum: "",
         amount: 0,
       };
-      memberFormRef.value.resetFields();
       dialogFormVisible.value = true;
       nextTick(() => {
-        dialogFormVisible.value = true;
+        memberFormRef.value.resetFields();
       });
     };
 
